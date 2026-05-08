@@ -3,11 +3,31 @@ variable "resource_group_name" {
 }
 
 variable "location" {
-  default = "Central India"
+  default = "centralindia"
+}
+
+variable "vnet_name" {
+  default = "task6-vnet-2"
+}
+
+variable "subnet_name" {
+  default = "task6-subnet-2"
+}
+
+variable "public_ip_name" {
+  default = "task6-public-ip-2"
+}
+
+variable "nsg_name" {
+  default = "task6-nsg-2"
+}
+
+variable "nic_name" {
+  default = "task6-nic-2"
 }
 
 variable "vm_name" {
-  default = "task6-vm"
+  default = "task6-vm-2"
 }
 
 variable "admin_username" {
@@ -15,5 +35,5 @@ variable "admin_username" {
 }
 
 variable "admin_password" {
-  default = "Task6@12345"
+  default = "Password@1234"
 }

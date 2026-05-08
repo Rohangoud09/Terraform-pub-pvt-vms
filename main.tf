@@ -3,30 +3,30 @@ data "azurerm_resource_group" "rg" {
 }
 
 resource "azurerm_virtual_network" "vnet" {
-  name                = "task6-vnet"
+  name                = var.vnet_name
   address_space       = ["10.0.0.0/16"]
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
 }
 
 resource "azurerm_subnet" "subnet" {
-  name                 = "task6-subnet"
+  name                 = var.subnet_name
   resource_group_name  = data.azurerm_resource_group.rg.name
   virtual_network_name = azurerm_virtual_network.vnet.name
   address_prefixes     = ["10.0.1.0/24"]
 }
 
 resource "azurerm_public_ip" "publicip" {
-  name                = "task6-public-ip"
-  location            = data.azurerm_resource_group.rg.location
+  name                = var.public_ip_name
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
   allocation_method   = "Static"
   sku                 = "Standard"
 }
 
 resource "azurerm_network_security_group" "nsg" {
-  name                = "task6-nsg"
-  location            = data.azurerm_resource_group.rg.location
+  name                = var.nsg_name
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
   security_rule {
@@ -55,8 +55,8 @@ resource "azurerm_network_security_group" "nsg" {
 }
 
 resource "azurerm_network_interface" "nic" {
-  name                = "task6-nic"
-  location            = data.azurerm_resource_group.rg.location
+  name                = var.nic_name
+  location            = var.location
   resource_group_name = data.azurerm_resource_group.rg.name
 
   ip_configuration {
@@ -73,12 +73,11 @@ resource "azurerm_network_interface_security_group_association" "nsg_association
 }
 
 resource "azurerm_linux_virtual_machine" "vm" {
-
   name                = var.vm_name
   resource_group_name = data.azurerm_resource_group.rg.name
-  location            = data.azurerm_resource_group.rg.location
+  location            = var.location
+  size                = "Standard_B1s"
 
-  size           = "Standard_B1s"
   admin_username = var.admin_username
   admin_password = var.admin_password
 
@@ -99,40 +98,4 @@ resource "azurerm_linux_virtual_machine" "vm" {
     sku       = "22_04-lts"
     version   = "latest"
   }
-
-  custom_data = base64encode(<<EOF
-#!/bin/bash
-
-apt update -y
-apt install -y nodejs npm git
-
-mkdir /app
-cd /app
-
-cat > app.js <<'EOT'
-
-const express = require('express');
-const app = express();
-
-app.get('/', (req, res) => {
-
-res.send('Hello Rohan 🚀 Terraform Task 6 Running Successfully');
-
-});
-
-app.listen(3000, () => {
-
-console.log('Server running on port 3000');
-
-});
-
-EOT
-
-npm init -y
-npm install express
-
-nohup node app.js > output.log 2>&1 &
-
-EOF
-  )
 }
