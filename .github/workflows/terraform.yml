@@ -1,4 +1,4 @@
-name: Deploy Node App
+name: Terraform Azure Deploy
 
 on:
   push:
@@ -6,31 +6,29 @@ on:
       - main
 
 jobs:
-  deploy:
+  terraform:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: SSH into VM and Deploy
-        uses: appleboy/ssh-action@v1.0.3
-
+      - name: Azure Login
+        uses: azure/login@v2
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: azureuser
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            cd /app
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-            if [ ! -d ".git" ]; then
-              git clone https://github.com/Rohangoud09/Terraform-pub-pvt-vms.git temp
-              cp -r temp/* .
-              rm -rf temp
-            else
-              git pull origin main
-            fi
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-            npm install
+      - name: Terraform Init
+        run: terraform init
 
-            pm2 restart app || pm2 start app.js --name app
+      - name: Terraform Validate
+        run: terraform validate
+
+      - name: Terraform Plan
+        run: terraform plan
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
