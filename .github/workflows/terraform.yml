@@ -1,0 +1,36 @@
+name: Deploy Node App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: SSH into VM and Deploy
+        uses: appleboy/ssh-action@v1.0.3
+
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: azureuser
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /app
+
+            if [ ! -d ".git" ]; then
+              git clone https://github.com/Rohangoud09/Terraform-pub-pvt-vms.git temp
+              cp -r temp/* .
+              rm -rf temp
+            else
+              git pull origin main
+            fi
+
+            npm install
+
+            pm2 restart app || pm2 start app.js --name app
